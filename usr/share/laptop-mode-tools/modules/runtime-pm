@@ -92,7 +92,8 @@ echo_to_file() {
         done
 }
 
-if [ x$CONTROL_RUNTIME_AUTOSUSPEND = x1 ] || [ x$ENABLE_AUTO_MODULES = x1 -a x$CONTROL_RUNTIME_AUTOSUSPEND = xauto ]; then
+#if [ x$CONTROL_RUNTIME_AUTOSUSPEND = x1 ] || [ x$ENABLE_AUTO_MODULES = x1 -a x$CONTROL_RUNTIME_AUTOSUSPEND = xauto ]; then
+if [ x$CONTROL_RUNTIME_AUTOSUSPEND = x2 ]; then
 	if [ $ON_AC -eq 1 ]; then
 		if [ "$ACTIVATE" -eq 1 ]; then
 			SUSPEND_RUNTIME_DEVICES="$LM_AC_SUSPEND_RUNTIME"
