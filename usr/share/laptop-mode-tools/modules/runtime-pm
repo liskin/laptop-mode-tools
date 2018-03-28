@@ -116,10 +116,16 @@ if [ x$CONTROL_RUNTIME_AUTOSUSPEND = x2 ]; then
 		DEVICE_LIST=/sys/bus/*/devices/*
 	fi
 
+	T12s=0
+	T23s=0
+
 	if [ x$SUSPEND_RUNTIME_DEVICES = x1 ]; then
 
 		if [ "$DEVICE_LIST" != "" ]; then
 			for runtime_device in $DEVICE_LIST; do
+
+				T1=$(date +%s%N)
+				#log "VERBOSE" "lists-pre: $(date +%s.%N)"
 
 				USE_DEVICE=0
 				if [ x$AUTOSUSPEND_USE_WHITELIST = x1 ]; then
@@ -132,9 +138,12 @@ if [ x$CONTROL_RUNTIME_AUTOSUSPEND = x2 ]; then
 					if ! blacklisted $runtime_device; then
 						USE_DEVICE=1
 					else
-						log "Device $runtime_device is blacklisted, skipping auto suspend."
+						log "VERBOSE" "Device $runtime_device is blacklisted, skipping auto suspend."
 					fi
 				fi
+
+				T2=$(date +%s%N)
+				#log "VERBOSE" "lists-post: $(date +%s.%N)"
 
 				if [ x$USE_DEVICE = x1 ]; then
 					if [ -f "$runtime_device"/power/autosuspend_delay_ms ]; then
@@ -158,6 +167,12 @@ if [ x$CONTROL_RUNTIME_AUTOSUSPEND = x2 ]; then
 						log "VERBOSE" "Not enabling auto power level for device $runtime_device"
 					fi
 				fi
+
+				T3=$(date +%s%N)
+				#log "VERBOSE" "set-post: $(date +%s.%N)"
+
+				T12s=$(( T12s + (T2 - T1) ))
+				T23s=$(( T23s + (T3 - T2) ))
 			done
 		fi
 	else
@@ -187,6 +202,9 @@ if [ x$CONTROL_RUNTIME_AUTOSUSPEND = x2 ]; then
 			done
 		fi
 	fi
+
+	echo "T12s: $(bc -l <<<"$T12s / 10^9")" >&2
+	echo "T23s: $(bc -l <<<"$T23s / 10^9")" >&2
 else
 	log "VERBOSE" "RUNTIME autosuspend is disabled."
 fi
