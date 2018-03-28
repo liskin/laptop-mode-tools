@@ -8,31 +8,17 @@ listed_by_id() {
 	device=$1
 	list=$2
 
-	if ! idvendor=$(cat $device/idVendor 2>/dev/null || cat $device/vendor 2>/dev/null) || \
-	   ! idproduct=$(cat $device/idProduct 2>/dev/null || cat $device/device 2>/dev/null); then
+	if ! { idvendor=$(< $device/idVendor ) || idvendor=$(< $device/vendor ); } 2>/dev/null || \
+	   ! { idproduct=$(< $device/idProduct ) || idproduct=$(< $device/device ); } 2>/dev/null; then
 		return 1
 	fi
 	idvendor=${idvendor#0x}
 	idproduct=${idproduct#0x}
 
 	for devid in $list; do
-	    case $devid in
-		    *:*) ;;
-		    *) continue;;
-		esac
-
-		vendor=${devid%:*}
-		product=${devid#*:}
-
-		case $idvendor in
-		    ${vendor})
-			case $idproduct in
-			    ${product})	return 0;;
-			    *) ;;
-			esac
-			;;
-		    *);;
-		esac
+		if [ "$devid" = "$idvendor:$idproduct" ]; then
+			return 0
+		fi
 	done
 	return 1
 }
@@ -40,10 +26,10 @@ listed_by_id() {
 # Check whether the driver type is blacklisted
 listed_by_type() {
 	device=$1
-	device_base=`basename $device`
+	device_base=${device##*/}
 	list=$2
 
-	if ! uevent_data=$(cat $device/uevent 2>/dev/null); then
+	if ! { uevent_data=$(< $device/uevent ); } 2>/dev/null; then
 		return 1
 	fi
 
